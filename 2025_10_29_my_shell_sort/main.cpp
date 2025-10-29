@@ -4,7 +4,7 @@
 #include <iostream>
 
 int main() {
-    size_t array_size;
+    int array_size;
     std::cout << "Введите длину массива: " << std::endl;
     std::cin >> array_size;
     

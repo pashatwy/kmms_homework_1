@@ -4,34 +4,30 @@
 
 #include "shell_sorting.hpp"
 
-size_t* generate_gaps_sequence(size_t array_size, size_t& sequence_size);
-void shell_sort(int* array, size_t array_size);
-void fill_random_values(int* array, size_t array_size);
-
 namespace gpi {
-    size_t* generate_gaps_sequence(size_t array_size, size_t& sequence_size) {
-        const size_t MAX_SEQUENCE_SIZE = 100;
-        size_t* sequence = new size_t[MAX_SEQUENCE_SIZE];
+    int* generate_gaps_sequence(int array_size, int& sequence_size) {
+        const int max_sequence_size = 100;
+        int* sequence = new int[max_sequence_size];
         sequence_size = 0;
         
-        for (size_t p = 1; p <= array_size; p *= 2) {
-            for (size_t q = p; q <= array_size; q *= 3) {
-                if (sequence_size < MAX_SEQUENCE_SIZE) {
+        for (int p = 1; p <= array_size; p *= 2) {
+            for (int q = p; q <= array_size; q *= 3) {
+                if (sequence_size < max_sequence_size) {
                     sequence[sequence_size++] = q;
                 }
             }
         }
         
-        for (size_t i = 0; i < sequence_size - 1; ++i) {
-            for (size_t j = i + 1; j < sequence_size; ++j) {
+        for (int i = 0; i < sequence_size - 1; ++i) {
+            for (int j = i + 1; j < sequence_size; ++j) {
                 if (sequence[i] < sequence[j]) {
                     std::swap(sequence[i], sequence[j]);
                 }
             }
         }
         
-        size_t unique_count = 0;
-        for (size_t i = 0; i < sequence_size; ++i) {
+        int unique_count = 0;
+        for (int i = 0; i < sequence_size; ++i) {
             if (i == 0 || sequence[i] != sequence[i - 1]) {
                 sequence[unique_count++] = sequence[i];
             }
@@ -41,15 +37,15 @@ namespace gpi {
         return sequence;
     }
 
-    void shell_sort(int* array, size_t array_size) {
-        size_t gaps_size;
-        size_t* gaps = generate_gaps_sequence(array_size, gaps_size);
+    void shell_sort(int* array, int array_size) {
+        int gaps_size;
+        int* gaps = generate_gaps_sequence(array_size, gaps_size);
 
-        for (size_t gap_index = 0; gap_index < gaps_size; ++gap_index) {
-            size_t gap = gaps[gap_index];
-            for (size_t i = gap; i < array_size; ++i) {
+        for (int gap_index = 0; gap_index < gaps_size; ++gap_index) {
+            int gap = gaps[gap_index];
+            for (int i = gap; i < array_size; ++i) {
                 int temp_value = array[i];
-                size_t j = i;
+                int j = i;
 
                 while (j >= gap && array[j - gap] > temp_value) {
                     array[j] = array[j - gap];
@@ -62,9 +58,9 @@ namespace gpi {
         delete[] gaps;
     }
 
-    void fill_random_values(int* array, size_t array_size) {
+    void fill_random_values(int* array, int array_size) {
         std::mt19937 generator(std::time(nullptr));
-        for (size_t i = 0; i < array_size; ++i) {
+        for (int i = 0; i < array_size; ++i) {
             array[i] = (generator() % 100) + 100;
         }
     }
