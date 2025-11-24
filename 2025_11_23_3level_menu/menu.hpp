@@ -9,5 +9,7 @@ namespace gpi{
 		
 		const MenuItem* const *children;
 		const int children_count;
+		
+		const char* const greeting;
 	};
 }
