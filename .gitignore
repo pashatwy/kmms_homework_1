@@ -3,6 +3,7 @@
 #
 
 build_*/
+lib/
 
 *.exe
 *.ii
