@@ -17,3 +17,4 @@ cmake --build .
 
 
 copy ..\%SOURCE_FOLDER%\shell_sort\build_run.bat .\shell_sort
+copy ..\%SOURCE_FOLDER%\obychaika\build_run.bat .\obychaika
