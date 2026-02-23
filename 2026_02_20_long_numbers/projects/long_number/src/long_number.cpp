@@ -15,7 +15,6 @@ LongNumber::LongNumber(int length, int sign) {
     this->numbers = new int[length]{0};
 }
 
-
 LongNumber::LongNumber(const char* const str) {
 	sign = (str[0] == '-') ? -1 : 1;
 	length = get_length(str);
@@ -51,21 +50,53 @@ LongNumber::LongNumber(LongNumber&& x) {
 }
 
 LongNumber::~LongNumber() {
-	delete[] numbers;
+	length = 0;
+	delete [] numbers;
+	numbers = nullptr;
 }
 
 LongNumber& LongNumber::operator = (const char* const str) {
-	// TODO 
+	delete[] numbers;
+	
+	sign = (str[0] == '-') ? -1 : 1;
+	length = get_length(str);
+	numbers = new int[length];
+	
+	int str_index = 0;
+	while (str[str_index] != '\0') str_index++;
+	
+	for (int i = 0; i < length; i++){
+		numbers[i] = str[--str_index] - '0';
+	}
+		
 	return *this;
 }
 
 LongNumber& LongNumber::operator = (const LongNumber& x) {
-	// TODO
+	if (this == &x) return *this;
+	delete[] numbers;
+	
+	length = x.length;
+	sign = x.sign;
+	
+	numbers = new int[x.length];
+	for (int i = 0; i < x.length; i++){
+		numbers[i] = x.numbers[i];
+	}
 	return *this;
 }
 
 LongNumber& LongNumber::operator = (LongNumber&& x) {
-	//TODO
+	if (this == &x) return *this;
+	delete[] numbers;
+	
+	numbers = x.numbers;
+	sign = x.sign;
+	length = x.length;
+	
+	x.numbers = nullptr;
+	x.length = 0;
+	
 	return *this;
 }
 
@@ -213,22 +244,68 @@ LongNumber LongNumber::operator - (const LongNumber& x) const {
 }
 
 LongNumber LongNumber::operator * (const LongNumber& x) const {
-	// TODO
-	return *this;
+	LongNumber result(length + x.length, sign * x.sign);
+	for (int i = 0; i < x.length; i++) {
+		for (int j = 0; j < length; j++) {
+			result.numbers[j + i] += x.numbers[i] * numbers[j];
+			if (result.numbers[i + j] > 9){
+				int q = result.numbers[i + j] / 10;
+				result.numbers[i + j + 1] += q;
+				result.numbers[i + j] -= q * 10;
+			}
+		}
+	}
+	while (result.length > 1 && result.numbers[result.length - 1] == 0) {
+		result.length--;
+	}
+	return result;
 }
 
 LongNumber LongNumber::operator / (const LongNumber& x) const {
-	// TODO
-	return *this;
+    biv::LongNumber chastnoe(length, ((sign == x.sign) ? 1 : -1));
+    
+    biv::LongNumber div_copy = *this; div_copy.sign = 1;
+    biv::LongNumber x_copy = x; x_copy.sign = 1;
+
+    if (div_copy < x_copy) {
+        return biv::LongNumber("0");
+    }
+
+    biv::LongNumber first("0"); 
+
+    for (int i = length - 1; i >= 0; i--) {
+        first = first * biv::LongNumber("10");
+        first.numbers[0] = numbers[i]; 
+
+        int j = 0;
+        for (int k = 1; k <= 9; k++) {
+            biv::LongNumber j_long(std::to_string(k).c_str());
+            if (!(x_copy * j_long > first)) {
+                j = k;
+            } else {
+                break;
+            }
+        }
+		chastnoe.numbers[i] = j;
+
+        biv::LongNumber j_long(std::to_string(j).c_str());
+        biv::LongNumber multiplication = x_copy * j_long;
+        first = first - multiplication;
+    }
+
+    while (chastnoe.length > 1 && chastnoe.numbers[chastnoe.length - 1] == 0) {
+        chastnoe.length--;
+    }
+    if (chastnoe.length == 1 && chastnoe.numbers[0] == 0) chastnoe.sign = 1;
+
+    return chastnoe;
 }
 
 LongNumber LongNumber::operator % (const LongNumber& x) const {
-	// TODO
-	return *this;
+	return *this - (*this / x) * x;
 }
 
 bool LongNumber::is_negative() const noexcept {
-	// TODO
 	return sign == -1;
 }
 
