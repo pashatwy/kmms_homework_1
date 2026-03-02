@@ -5,9 +5,9 @@
 class LongNumberTest : public testing::Test {
 	public:
 		biv::LongNumber 
-			z1{"-1"}, z10{"-10"}, z1234{"-1234"}, z1244{"-1244"},
+			z1{"-1"}, z2{"-2"},z6{"-6"}, z7{"-7"}, z10{"-10"}, z1234{"-1234"}, z1244{"-1244"},
 			
-			n1{"1"}, n10{"10"}, n12{"12"}, n99{"99"}, n100{"100"}, n1234{"1234"}, n1246{"1246"},
+			n1{"1"}, n2{"2"}, n3{"3"}, n7{"7"}, n10{"10"}, n12{"12"}, n99{"99"}, n100{"100"}, n1234{"1234"}, n1246{"1246"},
 			
 			z1_copy{"-1"}, z0{"0"}, n1_copy{"1"}, n12_copy{"12"};
 };
@@ -58,17 +58,21 @@ TEST_F(LongNumberTest, Multiplication){
 	EXPECT_EQ(n12_copy, n12 * n1) << "12 * 1 = 12";
 	EXPECT_EQ(n1234, z1 * z1234) << "-1 * (-1234) = 1234";
 	EXPECT_EQ(z0, z0* n1234) << "0 * 1234 = 0";
+	EXPECT_EQ(z6, z2 * n3) << "-2 * 3 = -6";
 }
 
 TEST_F(LongNumberTest, Division){
 	EXPECT_EQ(n12_copy, n12 / n1) << "12 / 1 = 12";
 	EXPECT_EQ(n12, n1234 / n100) << "1234 / 100 = 12";
 	EXPECT_EQ(z10, n10 / z1) << "10 / (-1) = -10 ";
+	EXPECT_EQ(z2, z7 / n3) << "-7 / 3 = -2";
+	EXPECT_EQ(n2, n7 / n3) << "7 / 3 = 2";	
 }
 
 TEST_F(LongNumberTest, DivisionWithRemainder){
 	EXPECT_EQ(n1_copy, n1 % n10) << "1 % 10 = 1";
 	EXPECT_EQ(z0, n12 % n12_copy) << "12 % 12 = 0";
+	EXPECT_EQ(z1, z7 % n3) << "-7 % 3 = -1";
 }
 
 int main(int argc, char **argv){

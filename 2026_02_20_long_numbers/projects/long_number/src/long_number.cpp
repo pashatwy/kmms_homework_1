@@ -134,113 +134,79 @@ bool LongNumber::operator < (const LongNumber& x) const {
 	return x > *this;
 }
 
-LongNumber LongNumber::operator + (const LongNumber& x) const { 
-	const int* longer_numbers = nullptr;
-	if (sign == x.sign){
-		int max_len = std::max(length, x.length);
-		biv::LongNumber result(max_len + 1, sign);
-		for (int i = 0; i < std::min(length, x.length); i++){
-			int char_sum = numbers[i] + x.numbers[i] + result.numbers[i];
-			result.numbers[i] = char_sum % 10;
-			result.numbers[i+1] = char_sum / 10;
-		}
-		
-		if (length != x.length){
-			if (length > x.length){
-				longer_numbers = numbers; 
-			}else{
-				longer_numbers = x.numbers; 
-			}
-			for (int i = std::min(length, x.length); i < std::max(length, x.length); i++){
-				int char_sum = result.numbers[i] + longer_numbers[i];
-				result.numbers[i] = char_sum % 10;
-				result.numbers[i+1] = int(char_sum / 10);
-			}
-		}
-		while (result.length > 1 && result.numbers[result.length - 1] == 0) {
-			result.length--;
-		}
-		return result;
-	}else{
-		if(sign > x.sign){
-			biv::LongNumber positive_x = x;
-			positive_x.sign = 1;
-			return *this - positive_x;
-		}
-		else{
-			biv::LongNumber positive_this = *this;
-			positive_this.sign = 1;
-			return x - positive_this;
-		}
-	}
-}
-
-LongNumber LongNumber::operator - (const LongNumber& x) const {
+LongNumber LongNumber::operator + (const LongNumber& x) const {
     if (sign == x.sign) {
         int max_len = std::max(length, x.length);
-        biv::LongNumber result(max_len, sign);
-        int borrow = 0;
+        biv::LongNumber result(max_len + 1, sign); 
+        
+        int carry = 0;
+        int i = 0;
+        for (; i < max_len || carry; i++) {
+            int d1 = (i < length) ? numbers[i] : 0;
+            int d2 = (i < x.length) ? x.numbers[i] : 0;
+            int sum = d1 + d2 + carry;
+            
+            result.numbers[i] = sum % 10;
+            carry = sum / 10;
+        }
+        result.length = i;
 
-        if (sign == 1) {
-            LongNumber a_abs = *this; a_abs.sign = 1;
-            LongNumber b_abs = x; b_abs.sign = 1;
+        while (result.length > 1 && result.numbers[result.length - 1] == 0) {
+            result.length--;
+        }
+        return result; 
+    }
+    
+    else {
+        biv::LongNumber a_abs = *this; a_abs.sign = 1;
+        biv::LongNumber b_abs = x;     b_abs.sign = 1;
+        
+        const LongNumber *max_ptr, *min_ptr;
+        int target_sign;
 
-            if (a_abs < b_abs) { 
-                result.sign = -1;
-                for (int i = 0; i < max_len; i++) {
-                    int val1 = (i < x.length) ? x.numbers[i] : 0;
-                    int val2 = (i < length) ? numbers[i] : 0;
-                    int sub = val1 - val2 - borrow;
-                    if (sub < 0) { sub += 10; borrow = 1; }
-                    else borrow = 0;
-                    result.numbers[i] = sub;
-                }
-            } else {
-                for (int i = 0; i < max_len; i++) {
-                    int val1 = numbers[i];
-                    int val2 = (i < x.length) ? x.numbers[i] : 0;
-                    int sub = val1 - val2 - borrow;
-                    if (sub < 0) { sub += 10; borrow = 1; }
-                    else borrow = 0;
-                    result.numbers[i] = sub;
-                }
-            }
+        if (!(a_abs < b_abs)) {
+            max_ptr = this; 
+            min_ptr = &x;
+            target_sign = this->sign;
         } else {
-            LongNumber a_abs = *this; a_abs.sign = 1;
-            LongNumber b_abs = x; b_abs.sign = 1;
+            max_ptr = &x; 
+            min_ptr = this;
+            target_sign = x.sign;
+        }
 
-            if (a_abs > b_abs) {
-                result.sign = -1;
-                for (int i = 0; i < max_len; i++) {
-                    int val1 = numbers[i];
-                    int val2 = (i < x.length) ? x.numbers[i] : 0;
-                    int sub = val1 - val2 - borrow;
-                    if (sub < 0) { sub += 10; borrow = 1; }
-                    else borrow = 0;
-                    result.numbers[i] = sub;
-                }
+        biv::LongNumber result(max_ptr->length, target_sign);
+        int borrow = 0;
+        for (int i = 0; i < max_ptr->length; i++) {
+            int v1 = max_ptr->numbers[i];
+            int v2 = (i < min_ptr->length) ? min_ptr->numbers[i] : 0;
+            int sub = v1 - v2 - borrow;
+            
+            if (sub < 0) {
+                sub += 10;
+                borrow = 1;
             } else {
-                result.sign = 1;
-                for (int i = 0; i < max_len; i++) {
-                    int val1 = (i < x.length) ? x.numbers[i] : 0;
-                    int val2 = (i < length) ? numbers[i] : 0;
-                    int sub = val1 - val2 - borrow;
-                    if (sub < 0) { sub += 10; borrow = 1; }
-                    else borrow = 0;
-                    result.numbers[i] = sub;
-                }
+                borrow = 0;
             }
+            result.numbers[i] = sub;
         }
         
         while (result.length > 1 && result.numbers[result.length - 1] == 0) {
             result.length--;
         }
+        if (result.length == 1 && result.numbers[0] == 0) {
+			result.sign = 1;
+        }
+        
         return result;
-    } else {
-        biv::LongNumber copy_x = x;
-        copy_x.sign = sign;
-        return *this + copy_x;
     }
+}
+
+
+LongNumber LongNumber::operator - (const LongNumber& x) const {
+    biv::LongNumber x_with_opposite_sign = x;
+    x_with_opposite_sign.sign *= -1;
+	
+    return *this + x_with_opposite_sign;
 }
 
 LongNumber LongNumber::operator * (const LongNumber& x) const {
@@ -278,19 +244,11 @@ LongNumber LongNumber::operator / (const LongNumber& x) const {
         first.numbers[0] = numbers[i]; 
 
         int j = 0;
-        for (int k = 1; k <= 9; k++) {
-            biv::LongNumber j_long(std::to_string(k).c_str());
-            if (!(x_copy * j_long > first)) {
-                j = k;
-            } else {
-                break;
-            }
-        }
+		while (!(first < x_copy)) {
+			first = first - x_copy;
+			j++;
+		}
 		chastnoe.numbers[i] = j;
-
-        biv::LongNumber j_long(std::to_string(j).c_str());
-        biv::LongNumber multiplication = x_copy * j_long;
-        first = first - multiplication;
     }
 
     while (chastnoe.length > 1 && chastnoe.numbers[chastnoe.length - 1] == 0) {
