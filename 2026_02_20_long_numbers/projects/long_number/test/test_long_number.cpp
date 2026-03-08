@@ -2,80 +2,114 @@
 
 #include "long_number.hpp"
 
-class LongNumberTest : public testing::Test {
+using biv::LongNumber;
+
+class FComparisons : public testing::Test {
 	public:
-		biv::LongNumber 
-			z1{"-1"}, z2{"-2"},z6{"-6"}, z7{"-7"}, z10{"-10"}, z1234{"-1234"}, z1244{"-1244"},
+		LongNumber 
+			n_2{"-2"}, n_1{"-1"}, n_1_copy{"-1"},
 			
-			n1{"1"}, n2{"2"}, n3{"3"}, n7{"7"}, n10{"10"}, n12{"12"}, n99{"99"}, n100{"100"}, n1234{"1234"}, n1246{"1246"},
-			
-			z1_copy{"-1"}, z0{"0"}, n1_copy{"1"}, n12_copy{"12"};
+			p_1{"1"}, p_1_copy{"1"}, p_12{"12"};
 };
 
-TEST_F(LongNumberTest, Equality){
-	ASSERT_TRUE(z1 == z1_copy) << "-1 == -1";
-	ASSERT_TRUE(n12 == n12_copy) << "12 == 12";
-	ASSERT_FALSE(z1 == n1) << "-1 == 1";
-	ASSERT_FALSE(z1234 == n1234) << "-1234 == 1234";
+TEST_F(FComparisons, equal) {
+	EXPECT_TRUE(p_1 == p_1_copy) << "EXPECT_TRUE: 1 == 1";
+	EXPECT_FALSE(n_1 == p_1) << "EXPECT_FALSE: -1 == 1";
+	EXPECT_FALSE(p_1 == p_12) << "EXPECT_FALSE: 1 == 12";
+	EXPECT_EQ(p_1, p_1_copy) << "EXPECT_EQ: 1 == 1";
+	EXPECT_EQ(n_1, n_1_copy) << "EXPECT_EQ: -1 == -1";
 }
 
-TEST_F(LongNumberTest, NoEquality){
-	ASSERT_TRUE(z1 != n1) << "-1 != 1";
-	ASSERT_TRUE(n12 != n1234) << "12 != 1234";
-	ASSERT_FALSE(z1 != z1_copy) << "-1 != -1";
-	ASSERT_FALSE(n1 != n1_copy) << "1 != 1";
+TEST_F(FComparisons, not_equal) {
+	EXPECT_TRUE(n_1 != p_1) << "EXPECT_TRUE: -1 != 1";
+	EXPECT_TRUE(p_1 != p_12) << "EXPECT_TRUE: 1 != 12";
+	EXPECT_FALSE(p_1 != p_1_copy) << "EXPECT_FALSE: 1 == 1";
+	ASSERT_NE(p_1, p_12) << "ASSERT_NE: 1 != 12";
+	ASSERT_NE(n_1, p_1) << "ASSERT_NE: -1 != 1";
 }
 
-TEST_F(LongNumberTest, More){
-	ASSERT_TRUE(z1 > z10) << "-1 > -10";
-	ASSERT_TRUE(n1 > z1234) << "1 > -1234";
-	ASSERT_FALSE(z10 > n12) << "-10 > 12";
-	ASSERT_FALSE(n1 > n1234) << "1 > 1234";
+TEST_F(FComparisons, more) {
+	EXPECT_TRUE(p_12 > p_1) << "12 > 1";
+	EXPECT_TRUE(p_1 > n_1) << "1 > -1";
+	EXPECT_TRUE(n_1 > n_2) << "-1 > -2";
+	EXPECT_FALSE(p_1_copy > p_1) << "1 > 1";
+	EXPECT_FALSE(p_1 > p_12) << "1 > 12";
 }
 
-TEST_F(LongNumberTest, Less){
-	ASSERT_TRUE(z10 < z1) << "-10 < -1";
-	ASSERT_TRUE(z1234 < n1234) << "-1234 < 1234";
-	ASSERT_FALSE(n1234 < n1) << "1234 < 1";
-	ASSERT_FALSE(n1 < z1) << "1 < -1";
+TEST_F(FComparisons, less) {
+	EXPECT_TRUE(p_1 < p_12) << "1 < 12";
+	EXPECT_TRUE(n_1 < p_1) << "-1 < 1";
+	EXPECT_TRUE(n_2 < n_1) << "-2 < -1";
+	EXPECT_FALSE(p_1_copy < p_1) << "1 < 1";
+	EXPECT_FALSE(p_12 < p_1) << "12 < 1";
 }
 
-TEST_F(LongNumberTest, Summ){
-	EXPECT_EQ(z1244, z1234 + z10) << "-1234 + (-10) = -1244 | два минуса";
-	EXPECT_EQ(n1246, n12 + n1234) << "12 + 1234 = 1246 | два плюса";
-	EXPECT_EQ(n100, n1_copy + n99) << "1 + 99 = 100 | переход к новой длине";
-	EXPECT_EQ(z0, z1234 + n1234) << "-1234 + 1234 = 0 | разные знаки";
+class FArithmetic : public testing::Test {
+	public:
+		LongNumber 
+			n_19602{"-19602"}, n_99{"-99"}, n_87{"-87"}, n_17{"-17"},
+			n_16{"-16"}, n_15{"-15"},
+			n_7{"-7"}, n_4{"-4"}, n_3{"-3"}, n_2{"-2"}, n_1{"-1"},
+		
+			p_0{"0"}, p_1{"1"}, p_1_copy{"1"}, p_2{"2"}, p_3{"3"},
+			p_4{"4"}, p_6{"6"}, p_12{"12"}, p_16{"16"}, p_17{"17"}, 
+			p_99{"99"}, p_99_copy{"99"}, 
+			p_113{"113"}, p_198{"198"}, p_1188{"1188"}, p_19602{"19602"},
+			
+			n_100{"-100"}, n_6{"-6"}, p_100{"100"}, p_{"6"};
+};
+
+TEST_F(FArithmetic, summ) {
+	EXPECT_EQ(p_2, p_1 + p_1_copy) << "1 + 1 = 2";
+	EXPECT_EQ(p_0, p_1 + n_1) << "1 + (-1) = 0";
+	EXPECT_EQ(p_198, p_99 + p_99_copy) << "99 + 99 = 198";	
+	EXPECT_EQ(n_87, n_99 + p_12) << "-99 + 12 = -87";	
+	EXPECT_EQ(n_87, p_12 + n_99) << "12 + (-99) = -87";	
 }
 
-TEST_F(LongNumberTest, Subtraction){
-	EXPECT_EQ(n1234, n1246 - n12) << "1246 - 12 = 1234 | два плюса";
-	EXPECT_EQ(z1234, z1244 - z10) << "-1244 - (-10) = -1234 | два минуса, первый меньше второго";
-	EXPECT_EQ(n1234, z10 - z1244) << "-10 - (-1244) = 1234 | два минуса, первый больше второго";
-	EXPECT_EQ(n10, z1234 - z1244) << "-1234 - (-1244) = 10 | два минуса, первый меньше второго";
-	EXPECT_EQ(n100, n99 - z1) << "99 - (-1) = 100 разные знаки, новая длина";
-}
-TEST_F(LongNumberTest, Multiplication){
-	EXPECT_EQ(n12_copy, n12 * n1) << "12 * 1 = 12";
-	EXPECT_EQ(n1234, z1 * z1234) << "-1 * (-1234) = 1234";
-	EXPECT_EQ(z0, z0* n1234) << "0 * 1234 = 0";
-	EXPECT_EQ(z6, z2 * n3) << "-2 * 3 = -6";
+TEST_F(FArithmetic, substraction) {
+	EXPECT_EQ(p_0, p_1 - p_1_copy) << "1 - 1 = 0";
+	EXPECT_EQ(p_2, p_1 - n_1) << "1 + (-1) = 2";
+	EXPECT_EQ(n_87, p_12 - p_99) << "12 - 99 = -87";
 }
 
-TEST_F(LongNumberTest, Division){
-	EXPECT_EQ(n12_copy, n12 / n1) << "12 / 1 = 12";
-	EXPECT_EQ(n12, n1234 / n100) << "1234 / 100 = 12";
-	EXPECT_EQ(z10, n10 / z1) << "10 / (-1) = -10 ";
-	EXPECT_EQ(z2, z7 / n3) << "-7 / 3 = -2";
-	EXPECT_EQ(n2, n7 / n3) << "7 / 3 = 2";	
+TEST_F(FArithmetic, multiply) {
+	EXPECT_EQ(p_1, p_1 * p_1_copy) << "1 * 1 = 1";
+	EXPECT_EQ(n_1, p_1 * n_1) << "1 * (-1) = -1";
+	EXPECT_EQ(p_0, p_0 * p_99) << "0 * 99 = 0";
+	EXPECT_EQ(p_1188, p_12 * p_99) << "12 * 99 = 1188";
+	EXPECT_EQ(n_19602, p_198 * p_99 * n_1) << "198 * 99 * -1 = -19602";
 }
 
-TEST_F(LongNumberTest, DivisionWithRemainder){
-	EXPECT_EQ(n1_copy, n1 % n10) << "1 % 10 = 1";
-	EXPECT_EQ(z0, n12 % n12_copy) << "12 % 12 = 0";
-	EXPECT_EQ(z1, z7 % n3) << "-7 % 3 = -1";
+TEST_F(FArithmetic, division) {
+	EXPECT_EQ(p_2, p_2 / p_1) << "2 / 1 = 2";
+	EXPECT_EQ(p_198, p_19602 / p_99) << "19602 / 99 = 198";
+	EXPECT_EQ(p_99, n_19602 / p_198 / n_1) << "-19602 / 198 / -1  = 99";
 }
 
-int main(int argc, char **argv){
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+TEST_F(FArithmetic, division_full_sign_example) {
+	EXPECT_EQ(p_16, p_100 / p_6) << "100 / 6 = 16";
+	EXPECT_EQ(n_16, p_100 / n_6) << "100 / -6 = -16";
+	EXPECT_EQ(n_17, n_100 / p_6) << "-100 / 6 = -17";
+	EXPECT_EQ(p_17, n_100 / n_6) << "-100 / -6 = 17";
+}
+
+TEST_F(FArithmetic, remainder) {
+	EXPECT_EQ(p_1, p_3 % p_2) << "3 % 2 = 1";
+	EXPECT_EQ(p_6, p_19602 % p_12) << "19602 % 12 = 6";
+	EXPECT_EQ(p_1, n_15 % p_4) << "-15 % 4 = 1";
+	EXPECT_EQ(p_2, p_113 % n_3) << "113 % -3 = 2";
+	EXPECT_EQ(p_6, n_15 % n_7) << "-15 % -7 = 6";
+}
+
+TEST_F(FArithmetic, remainder_full_sign_example) {
+	EXPECT_EQ(p_4, p_100 % p_6) << "100 % 6 = 4";
+	EXPECT_EQ(p_4, p_100 % n_6) << "100 % -6 = 4";
+	EXPECT_EQ(p_2, n_100 % p_6) << "-100 % 6 = 2";
+	EXPECT_EQ(p_2, n_100 % n_6) << "-100 % -6 = 2";
+}
+
+int main(int argc, char **argv) {
+	::testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }

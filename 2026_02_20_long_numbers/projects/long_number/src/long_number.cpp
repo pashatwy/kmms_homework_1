@@ -229,26 +229,35 @@ LongNumber LongNumber::operator * (const LongNumber& x) const {
 
 LongNumber LongNumber::operator / (const LongNumber& x) const {
     biv::LongNumber chastnoe(length, ((sign == x.sign) ? 1 : -1));
-    
+
     biv::LongNumber div_copy = *this; div_copy.sign = 1;
     biv::LongNumber x_copy = x; x_copy.sign = 1;
 
     if (div_copy < x_copy) {
+        if (sign == -1) {
+            biv::LongNumber res("1");
+            res.sign = chastnoe.sign;
+            return res;
+        }
         return biv::LongNumber("0");
     }
 
-    biv::LongNumber first("0"); 
+    biv::LongNumber first("0");
 
     for (int i = length - 1; i >= 0; i--) {
-        first = first * biv::LongNumber("10");
-        first.numbers[0] = numbers[i]; 
+        first = first * 10;
+        first.numbers[0] = numbers[i];
 
         int j = 0;
-		while (!(first < x_copy)) {
-			first = first - x_copy;
-			j++;
-		}
-		chastnoe.numbers[i] = j;
+        while (!(first < x_copy)) {
+            first = first - x_copy;
+            j++;
+        }
+        chastnoe.numbers[i] = j;
+    }
+
+    if (sign == -1 && !(first.length == 1 && first.numbers[0] == 0)) {
+        chastnoe = chastnoe + 1;
     }
 
     while (chastnoe.length > 1 && chastnoe.numbers[chastnoe.length - 1] == 0) {
