@@ -10,10 +10,10 @@
 typedef struct SObject {
 	float x, y;
 	float width, height;
-	float vertSpeed; //вертикальная скорость
-	bool IsFly; //находится в полете или нет
-	char cType; // тип объекта
-	float horizonSpeed; //скорость по горизонтали
+	float vertSpeed; 
+	bool IsFly; 
+	char cType; 
+	float horizonSpeed;
 } TObject;
 
 
@@ -27,7 +27,7 @@ TObject *moving = NULL;
 int movingLength;
 
 int level = 1;
-int score; //наши очки
+int score;
 int maxLvl;
 
 void ClearMap()
@@ -46,18 +46,18 @@ void ShowMap()
 		printf("%s\n", map[j]);
 }
 
-void SetObjectPos(TObject *obj, float xPos, float yPos) //задает позицию объекта
+void SetObjectPos(TObject *obj, float xPos, float yPos)
 {
 	(*obj).x = xPos;
 	(*obj).y = yPos;
 }
 
-void InitObject(TObject *obj, float xPos, float yPos, float oWidth, float oHeight, char inType) //инициализирует объект целиком
+void InitObject(TObject *obj, float xPos, float yPos, float oWidth, float oHeight, char inType)
 {
 	SetObjectPos(obj, xPos, yPos);
 	(*obj).width = oWidth;
 	(*obj).height = oHeight;
-	(*obj).vertSpeed = 0; //сначало не подвижен, верт. скорость = 0
+	(*obj).vertSpeed = 0;
 	(*obj).cType = inType;
 	(*obj).horizonSpeed = 0.2;
 }
@@ -70,7 +70,7 @@ void PlayerDead()
 	CreateLevel(level);
 }
 
-bool IsCollision(TObject o1, TObject o2); //такая функция есть, но она написана ниже
+bool IsCollision(TObject o1, TObject o2);
 void CreateLevel(int lvl);
 TObject *GetNewMoving();
 
@@ -78,10 +78,10 @@ TObject *GetNewMoving();
 void VertMoveObject(TObject *obj)
 {
 	(*obj).IsFly = TRUE;
-	(*obj).vertSpeed += 0.05; //ускорение
-	SetObjectPos(obj, (*obj).x, (*obj).y + (*obj).vertSpeed); //задает новую позицию изменяя y координату
+	(*obj).vertSpeed += 0.05; 
+	SetObjectPos(obj, (*obj).x, (*obj).y + (*obj).vertSpeed);
 	for (int i = 0; i < brickLength; i++)
-		if (IsCollision( *obj, brick[i])) //проверка на столкновение
+		if (IsCollision( *obj, brick[i]))
 		{
 			if(obj[0].vertSpeed > 0)
 				obj[0].IsFly = FALSE;
@@ -108,14 +108,14 @@ void VertMoveObject(TObject *obj)
 		}
 }
 
-void DeleteMoving(int i) //при убийстве объект врага удалаяем из массива объектов
+void DeleteMoving(int i)
 {
 	movingLength--;
 	moving[i] = moving[movingLength];
 	moving = (TObject*)realloc( moving, sizeof(*moving) * movingLength);
 }
 
-void MarioCollision() //взаимодейстиве с движущимися объектами
+void MarioCollision()
 {
 	for (int i = 0; i < movingLength; i++)
 		if (IsCollision(mario, moving[i]))
@@ -157,7 +157,7 @@ void HorizonMoveObject(TObject *obj)
 			obj[0].horizonSpeed = -obj[0].horizonSpeed;
 			return;
 		}
-	if (obj[0].cType == 'o') //все кроме 'o' спрыгивают с поверхности
+	if (obj[0].cType == 'o')
 	{
 		TObject tmp = *obj;
 		VertMoveObject(&tmp);
@@ -176,7 +176,7 @@ bool IsPosInMap(int x, int y)
 
 void PutObjectOnMap(TObject obj)
 {
-	int ix = (int)round(obj.x); //round - округление - результат в виде вещественного числа
+	int ix = (int)round(obj.x);
 	int iy = (int)round(obj.y);
 	int iWidth = (int)round(obj.width);
 	int iHeight = (int)round(obj.height);
@@ -192,13 +192,13 @@ void setCur(int x, int y)
 	COORD coord;
 	coord.X = x;
 	coord.Y = y;
-	SetConsoleCursorPosition( GetStdHandle(STD_OUTPUT_HANDLE), coord); //задает позицию курсора
+	SetConsoleCursorPosition( GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
-void HorizonMoveMap(float dx) //перемещение по горизонтали реализуется через перемещение самой карты
+void HorizonMoveMap(float dx)
 {
 	mario.x -= dx;
-	for (int i = 0; i < brickLength; i++) //если столкнулся - возвращаем в начальную позицию
+	for (int i = 0; i < brickLength; i++)
 		if (IsCollision(mario, brick[i]))
 		{
 			mario.x += dx;
@@ -212,13 +212,12 @@ void HorizonMoveMap(float dx) //перемещение по горизонтал
 		moving[i].x += dx;
 }
 
-bool IsCollision(TObject o1, TObject o2) //проверка на столкновение объектов
+bool IsCollision(TObject o1, TObject o2)
 {
 	return ((o1.x + o1.width) > o2.x) && (o1.x < (o2.x + o2.width)) &&
 		((o1.y + o1.height) > o2.y) && (o1.y < (o2.y + o2.height));
 }
 
-//добавляет новый объект в массив и возвращает в указатель
 TObject *GetNewBrick()
 {
 	brickLength++;
@@ -244,7 +243,7 @@ void PutScoreOnMap()
 	}
 }
 
-void CreateLevel(int lvl) //создаем уровень
+void CreateLevel(int lvl)
 {
 	brickLength = 0;
 	brick = (TObject*)realloc( brick, 0);
@@ -317,7 +316,7 @@ int main()
 		ClearMap();
 
 		
-		if ((mario.IsFly == FALSE) && (GetKeyState(VK_SPACE) < 0)) mario.vertSpeed = -1; //прыжок. Дает отрицатильную скорость на пробел 
+		if ((mario.IsFly == FALSE) && (GetKeyState(VK_SPACE) < 0)) mario.vertSpeed = -1; 
 		if (GetKeyState('A') < 0) HorizonMoveMap(1);
 		if (GetKeyState('D') < 0) HorizonMoveMap(-1);
 		
@@ -326,13 +325,13 @@ int main()
 		VertMoveObject(&mario);
 		MarioCollision();
 		
-		for (int i = 0; i < brickLength; i++) //проходясь по всем brick
+		for (int i = 0; i < brickLength; i++)
 			PutObjectOnMap(brick[i]);
 		for (int i = 0; i < movingLength; i++)
 		{
 			VertMoveObject(moving +i);
 			HorizonMoveObject(moving + i);
-			if (moving[i].y > mapHeight) //удаляем врага, если он ниже экрана
+			if (moving[i].y > mapHeight)
 			{
 				DeleteMoving(i);
 				i--;
@@ -340,13 +339,13 @@ int main()
 			}
 			PutObjectOnMap(moving[i]);
 		}
-		PutObjectOnMap(mario); //помещаем персонажа, после отчистки карты
+		PutObjectOnMap(mario);
 		PutScoreOnMap();
 		
 		setCur(0,0);
 		ShowMap();
 		
-		Sleep(10); //замедлим, что б видеть изменения
+		Sleep(10);
 	}
 	while (GetKeyState(VK_ESCAPE) >= 0);
 		
