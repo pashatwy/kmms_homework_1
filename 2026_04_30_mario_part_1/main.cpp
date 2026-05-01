@@ -27,6 +27,8 @@ TObject *moving = NULL;
 int movingLength;
 
 int level = 1;
+int score; //наши очки
+int maxLvl;
 
 void ClearMap()
 {
@@ -60,8 +62,18 @@ void InitObject(TObject *obj, float xPos, float yPos, float oWidth, float oHeigh
 	(*obj).horizonSpeed = 0.2;
 }
 
+void CreateLevel(int lvl);
+
+void PlayerDead()
+{
+	Sleep(500);
+	CreateLevel(level);
+}
+
 bool IsCollision(TObject o1, TObject o2); //такая функция есть, но она написана ниже
 void CreateLevel(int lvl);
+TObject *GetNewMoving();
+
 
 void VertMoveObject(TObject *obj)
 {
@@ -71,15 +83,26 @@ void VertMoveObject(TObject *obj)
 	for (int i = 0; i < brickLength; i++)
 		if (IsCollision( *obj, brick[i])) //проверка на столкновение
 		{
+			if(obj[0].vertSpeed > 0)
+				obj[0].IsFly = FALSE;
+			
+			if( (brick[i].cType == '?') && (obj[0].vertSpeed < 0) && (obj == &mario) )
+			{
+				brick[i].cType = '-';
+				InitObject(GetNewMoving(), brick[i].x, brick[i].y-3, 3, 2, '$');
+				moving[movingLength - 1].vertSpeed = -0.7;
+			}
+			
 			(*obj).y -= (*obj).vertSpeed;
 			(*obj).vertSpeed = 0;
-			(*obj).IsFly = FALSE;
+			
 			if (brick[i].cType == '+')
 			{
 				level += 1;
-				if (level >2) level = 1;
+				if (level > maxLvl) level = 1;
+				
+				Sleep(500);
 				CreateLevel(level);
-				Sleep(1000);
 			}
 			break;
 		}
@@ -104,12 +127,21 @@ void MarioCollision() //взаимодейстиве с движущимися �
 					&& (mario.y + mario.height < moving[i].y + moving[i].height) * 0.5
 					)
 				{
+					score += 50;
 					DeleteMoving(i);
 					i--;
 					continue;
 				}
 				else
-					CreateLevel(level);
+					PlayerDead();
+			}
+			
+			if (moving[i].cType == '$')
+			{
+				score += 100;
+				DeleteMoving(i);
+				i--;
+				continue;
 			}
 		}
 }
@@ -125,6 +157,8 @@ void HorizonMoveObject(TObject *obj)
 			obj[0].horizonSpeed = -obj[0].horizonSpeed;
 			return;
 		}
+	if (obj[0].cType == 'o') //все кроме 'o' спрыгивают с поверхности
+	{
 		TObject tmp = *obj;
 		VertMoveObject(&tmp);
 		if (tmp.IsFly == TRUE)
@@ -132,6 +166,7 @@ void HorizonMoveObject(TObject *obj)
 			obj[0].x -= obj[0].horizonSpeed;
 			obj[0].horizonSpeed = -obj[0].horizonSpeed;	
 		}
+	}
 }
 
 bool IsPosInMap(int x, int y)
@@ -198,21 +233,56 @@ TObject *GetNewMoving()
 	return moving + movingLength -1;
 }
 
+void PutScoreOnMap()
+{
+	char c[30];
+	sprintf(c, "Score: %d", score);
+	int len = strlen(c);
+	for (int i = 0; i < len; i++)
+	{
+		map[1][i+5] = c[i];
+	}
+}
+
 void CreateLevel(int lvl) //создаем уровень
 {
+	brickLength = 0;
+	brick = (TObject*)realloc( brick, 0);
+	movingLength = 0;
+	moving = (TObject*)realloc( moving, 0);
+	
 	InitObject(&mario, 39, 10, 3, 3, '@');
+	score = 0;
 	
 	if (lvl == 1)
 	{
-		
-		brickLength = 0;
+		InitObject(GetNewBrick(), 20, 20, 40, 5, '#');
+			InitObject(GetNewBrick(), 30, 10, 5, 3, '?');
+			InitObject(GetNewBrick(), 50, 10, 5, 3, '?');		
+		InitObject(GetNewBrick(), 60, 15, 40, 10, '#');
+			InitObject(GetNewBrick(), 60, 5, 10, 3, '-');
+			InitObject(GetNewBrick(), 70, 5, 5, 3, '?');
+			InitObject(GetNewBrick(), 75, 5, 5, 3, '-');
+			InitObject(GetNewBrick(), 80, 5, 5, 3, '?');
+			InitObject(GetNewBrick(), 85, 5, 10, 3, '-');
+		InitObject(GetNewBrick(), 100, 20, 20, 5, '#');
+		InitObject(GetNewBrick(), 120, 15, 10, 10, '#');
+		InitObject(GetNewBrick(), 150, 20, 40, 5, '#');
+		InitObject(GetNewBrick(), 210, 15, 10, 10, '+');
+
+		InitObject(GetNewMoving(), 25, 10, 3, 2, 'o');
+		InitObject(GetNewMoving(), 80, 10, 3, 2, 'o');
+	}
+	
+	
+	if (lvl == 2)
+	{
 		InitObject(GetNewBrick(), 20, 20, 40, 5, '#');
 		InitObject(GetNewBrick(), 60, 15, 10, 10, '#');
 		InitObject(GetNewBrick(), 80, 20, 20, 5, '#');
 		InitObject(GetNewBrick(), 120, 15, 10, 10, '#');
 		InitObject(GetNewBrick(), 150, 20, 40, 5, '#');
 		InitObject(GetNewBrick(), 210, 15, 10, 10, '+');
-		movingLength = 0;
 		InitObject(GetNewMoving(), 25, 10, 3, 2, 'o');
 		InitObject(GetNewMoving(), 80, 10, 3, 2, 'o');
 		InitObject(GetNewMoving(), 65, 10, 3, 2, 'o');
@@ -221,14 +291,12 @@ void CreateLevel(int lvl) //создаем уровень
 		InitObject(GetNewMoving(), 175, 10, 3, 2, 'o');
 		
 	}
-	if (lvl == 2)
+	if (lvl == 3)
 	{
-		brickLength = 0;
 		InitObject(GetNewBrick(), 20, 20, 40, 5, '#');
 		InitObject(GetNewBrick(), 80, 20, 15, 5, '#');
 		InitObject(GetNewBrick(), 120, 15, 15, 10, '#');
 		InitObject(GetNewBrick(), 160, 10, 15, 15, '+');
-		movingLength = 0;
 		InitObject(GetNewMoving(), 25, 10, 3, 2, 'o');
 		InitObject(GetNewMoving(), 50, 10, 3, 2, 'o');
 		InitObject(GetNewMoving(), 80, 10, 3, 2, 'o');
@@ -236,6 +304,8 @@ void CreateLevel(int lvl) //создаем уровень
 		InitObject(GetNewMoving(), 120, 10, 3, 2, 'o');
 		InitObject(GetNewMoving(), 130, 10, 3, 2, 'o');
 	}
+	
+	maxLvl = 3;
 }
 
 int main()
@@ -251,7 +321,7 @@ int main()
 		if (GetKeyState('A') < 0) HorizonMoveMap(1);
 		if (GetKeyState('D') < 0) HorizonMoveMap(-1);
 		
-		if (mario.y > mapHeight) CreateLevel(level);
+		if (mario.y > mapHeight) PlayerDead();
 		
 		VertMoveObject(&mario);
 		MarioCollision();
@@ -271,6 +341,7 @@ int main()
 			PutObjectOnMap(moving[i]);
 		}
 		PutObjectOnMap(mario); //помещаем персонажа, после отчистки карты
+		PutScoreOnMap();
 		
 		setCur(0,0);
 		ShowMap();
