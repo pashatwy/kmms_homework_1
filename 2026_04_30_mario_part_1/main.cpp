@@ -11,6 +11,7 @@ typedef struct SObject {
 	float x, y;
 	float width, height;
 	float vertSpeed; //вертикальная скорость
+	bool IsFly; //находится в полете или нет
 } TObject;
 
 
@@ -52,12 +53,14 @@ bool IsCollision(TObject o1, TObject o2); //такая функция есть, 
 
 void VertMoveObject(TObject *obj)
 {
+	(*obj).IsFly = TRUE;
 	(*obj).vertSpeed += 0.05; //ускорение
 	SetObjectPos(obj, (*obj).x, (*obj).y + (*obj).vertSpeed); //задает новую позицию изменяя y координату
 	if (IsCollision( *obj, brick[0])) //проверка на столкновение
 	{
 		(*obj).y -= (*obj).vertSpeed;
 		(*obj).vertSpeed = 0;
+		(*obj).IsFly = FALSE;
 	}
 }
 
@@ -87,6 +90,11 @@ void setCur(int x, int y)
 	SetConsoleCursorPosition( GetStdHandle(STD_OUTPUT_HANDLE), coord); //задает позицию курсора
 }
 
+void HorizonMoveMap(float dx) //перемещение по горизонтали реализуется через перемещение самой карты
+{
+	brick[0].x +=dx;
+}
+
 bool IsCollision(TObject o1, TObject o2) //проверка на столкновение объектов
 {
 	return ((o1.x + o1.width) > o2.x) && (o1.x < (o2.x + o2.width)) &&
@@ -101,6 +109,11 @@ int main()
 	do
 	{
 		ClearMap();
+		
+		if ((mario.IsFly == FALSE) && (GetKeyState(VK_SPACE) < 0)) mario.vertSpeed = -1; //прыжок. Дает отрицатильную скорость на пробел 
+		if (GetKeyState('A') < 0) HorizonMoveMap(1);
+		if (GetKeyState('D') < 0) HorizonMoveMap(-1);
+		
 		VertMoveObject(&mario);
 		PutObjectOnMap(brick[0]);
 		PutObjectOnMap(mario); //помещаем персонажа, после отчистки карты
