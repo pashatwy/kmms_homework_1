@@ -12,17 +12,19 @@ typedef struct SObject {
 	float width, height;
 	float vertSpeed; //вертикальная скорость
 	bool IsFly; //находится в полете или нет
+	char cType; // тип объекта
 } TObject;
 
 
 char map[mapHeight][mapWidth + 1];
 TObject mario;
-TObject brick[1];
+TObject *brick = NULL;
+int brickLength;
 
 void ClearMap()
 {
 	for (int i = 0; i < mapWidth; i++)
-		map[0][i] = '.';
+		map[0][i] = ' ';
 	map[0][mapWidth] = '\0';
 	for (int j = 1; j < mapHeight; j++)
 		sprintf(map[j], map[0]);
@@ -41,27 +43,36 @@ void SetObjectPos(TObject *obj, float xPos, float yPos) //задает пози�
 	(*obj).y = yPos;
 }
 
-void InitObject(TObject *obj, float xPos, float yPos, float oWidth, float oHeight) //инициализирует объект целиком
+void InitObject(TObject *obj, float xPos, float yPos, float oWidth, float oHeight, char inType) //инициализирует объект целиком
 {
 	SetObjectPos(obj, xPos, yPos);
 	(*obj).width = oWidth;
 	(*obj).height = oHeight;
 	(*obj).vertSpeed = 0; //сначало не подвижен, верт. скорость = 0
+	(*obj).cType = inType;
 }
 
 bool IsCollision(TObject o1, TObject o2); //такая функция есть, но она написана ниже
+void CreateLevel();
 
 void VertMoveObject(TObject *obj)
 {
 	(*obj).IsFly = TRUE;
 	(*obj).vertSpeed += 0.05; //ускорение
 	SetObjectPos(obj, (*obj).x, (*obj).y + (*obj).vertSpeed); //задает новую позицию изменяя y координату
-	if (IsCollision( *obj, brick[0])) //проверка на столкновение
-	{
-		(*obj).y -= (*obj).vertSpeed;
-		(*obj).vertSpeed = 0;
-		(*obj).IsFly = FALSE;
-	}
+	for (int i = 0; i < brickLength; i++)
+		if (IsCollision( *obj, brick[i])) //проверка на столкновение
+		{
+			(*obj).y -= (*obj).vertSpeed;
+			(*obj).vertSpeed = 0;
+			(*obj).IsFly = FALSE;
+			if (brick[i].cType == '+')
+			{
+				CreateLevel();
+				Sleep(1000);
+			}
+			break;
+		}
 }
 
 bool IsPosInMap(int x, int y)
@@ -79,7 +90,7 @@ void PutObjectOnMap(TObject obj)
 	for (int i = ix; i < (ix + iWidth); i++)
 		for (int j = iy; j < (iy + iHeight); j++)
 			if (IsPosInMap(i,j))
-				map[j][i] = '@';
+				map[j][i] = obj.cType;
 }
 
 void setCur(int x, int y)
@@ -92,7 +103,17 @@ void setCur(int x, int y)
 
 void HorizonMoveMap(float dx) //перемещение по горизонтали реализуется через перемещение самой карты
 {
-	brick[0].x +=dx;
+	mario.x -= dx;
+	for (int i = 0; i < brickLength; i++) //если столкнулся - возвращаем в начальную позицию
+		if (IsCollision(mario, brick[i]))
+		{
+			mario.x += dx;
+			return;
+		}
+	mario.x += dx;
+	
+	for (int i = 0; i < brickLength; i++)
+		brick[i].x += dx;	
 }
 
 bool IsCollision(TObject o1, TObject o2) //проверка на столкновение объектов
@@ -101,10 +122,23 @@ bool IsCollision(TObject o1, TObject o2) //проверка на столкно�
 		((o1.y + o1.height) > o2.y) && (o1.y < (o2.y + o2.height));
 }
 
+void CreateLevel() //создаем уровень
+{
+	InitObject(&mario, 39, 10, 3, 3, '@');
+	
+	brickLength = 6;
+	brick = (TObject*)realloc( brick, sizeof(*brick) * brickLength);
+	InitObject(brick+0, 20, 20, 40, 5, '#');
+	InitObject(brick+1, 60, 15, 10, 10, '#');
+	InitObject(brick+2, 80, 20, 20, 5, '#');
+	InitObject(brick+3, 120, 15, 10, 10, '#');
+	InitObject(brick+4, 150, 20, 40, 5, '#');
+	InitObject(brick+5, 210, 15, 10, 10, '+');
+}
+
 int main()
 {
-	InitObject(&mario, 39, 10, 3, 3);
-	InitObject(brick, 20, 20, 40 ,5); //инициализируем платформу
+	CreateLevel();
 	
 	do
 	{
@@ -114,8 +148,11 @@ int main()
 		if (GetKeyState('A') < 0) HorizonMoveMap(1);
 		if (GetKeyState('D') < 0) HorizonMoveMap(-1);
 		
+		if (mario.y > mapHeight) CreateLevel();
+		
 		VertMoveObject(&mario);
-		PutObjectOnMap(brick[0]);
+		for (int i = 0; i < brickLength; i++) //проходясь по всем brick
+			PutObjectOnMap(brick[i]);
 		PutObjectOnMap(mario); //помещаем персонажа, после отчистки карты
 		
 		setCur(0,0);
