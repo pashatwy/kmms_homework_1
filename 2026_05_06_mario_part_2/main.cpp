@@ -20,8 +20,7 @@ typedef struct SObject {
 char map[mapHeight][mapWidth + 1];
 TObject mario;
 
-TObject *brick = NULL;
-int brickLength;
+
 
 TObject *moving = NULL;
 int movingLength;
@@ -60,46 +59,46 @@ void InitObject(TObject *obj, float xPos, float yPos, float oWidth, float oHeigh
 	(*obj).horizonSpeed = 0.2;
 }
 
-//void CreateLevel(int *lvl, int *score,int *maxLvl);
+void CreateLevel(int *lvl, int *score,int *maxLvl, int *brickLength, TObject **brick);
 
-void PlayerDead(int *level, int *score, int *maxLvl)
+void PlayerDead(int *level, int *score, int *maxLvl, int *brickLength, TObject **brick)
 {
 	Sleep(500);
-	CreateLevel(level, score, maxLvl);
+	CreateLevel(level, score, maxLvl, brickLength, brick);
 }
 
 bool IsCollision(TObject o1, TObject o2); 
 TObject *GetNewMoving();
 
 
-void VertMoveObject(TObject *obj, int *level, int *score, int *maxLvl)
+void VertMoveObject(TObject *obj, int *level, int *score, int *maxLvl, int *brickLength, TObject **brick)
 {
 	(*obj).IsFly = TRUE;
 	(*obj).vertSpeed += 0.05;
 	SetObjectPos(obj, (*obj).x, (*obj).y + (*obj).vertSpeed);
-	for (int i = 0; i < brickLength; i++)
-		if (IsCollision( *obj, brick[i]))
+	for (int i = 0; i < *brickLength; i++)
+		if (IsCollision( *obj, (*brick)[i]))
 		{
 			if(obj[0].vertSpeed > 0)
 				obj[0].IsFly = FALSE;
 			
-			if( (brick[i].cType == '?') && (obj[0].vertSpeed < 0) && (obj == &mario) )
+			if( ((*brick)[i].cType == '?') && (obj[0].vertSpeed < 0) && (obj == &mario) )
 			{
-				brick[i].cType = '-';
-				InitObject(GetNewMoving(), brick[i].x, brick[i].y-3, 3, 2, '$');
+				(*brick)[i].cType = '-';
+				InitObject(GetNewMoving(), (*brick)[i].x, (*brick)[i].y-3, 3, 2, '$');
 				moving[movingLength - 1].vertSpeed = -0.7;
 			}
 			
 			(*obj).y -= (*obj).vertSpeed;
 			(*obj).vertSpeed = 0;
 			
-			if (brick[i].cType == '+')
+			if ((*brick)[i].cType == '+')
 			{
 				*level += 1;
 				if (*level > *maxLvl) *level = 1;
 				
 				Sleep(500);
-				CreateLevel(level, score, maxLvl);
+				CreateLevel(level, score, maxLvl, brickLength, brick);
 			}
 			break;
 		}
@@ -112,7 +111,7 @@ void DeleteMoving(int i)
 	moving = (TObject*)realloc( moving, sizeof(*moving) * movingLength);
 }
 
-void MarioCollision(int *level, int *score, int *maxLvl)
+void MarioCollision(int *level, int *score, int *maxLvl, int *brickLength, TObject **brick)
 {
 	for (int i = 0; i < movingLength; i++)
 		if (IsCollision(mario, moving[i]))
@@ -130,7 +129,7 @@ void MarioCollision(int *level, int *score, int *maxLvl)
 					continue;
 				}
 				else
-					PlayerDead(level, score, maxLvl);
+					PlayerDead(level, score, maxLvl, brickLength, brick);
 			}
 			
 			if (moving[i].cType == '$')
@@ -143,12 +142,12 @@ void MarioCollision(int *level, int *score, int *maxLvl)
 		}
 }
 
-void HorizonMoveObject(TObject *obj, int *level, int *score, int *maxLvl)
+void HorizonMoveObject(TObject *obj, int *level, int *score, int *maxLvl, int *brickLength, TObject **brick)
 {
 	obj[0].x += obj[0].horizonSpeed;
 	
-	for (int i = 0; i < brickLength; i++)
-		if (IsCollision(obj[0], brick[i]))
+	for (int i = 0; i < *brickLength; i++)
+		if (IsCollision(obj[0], (*brick)[i]))
 		{
 			obj[0].x -= obj[0].horizonSpeed;
 			obj[0].horizonSpeed = -obj[0].horizonSpeed;
@@ -157,7 +156,7 @@ void HorizonMoveObject(TObject *obj, int *level, int *score, int *maxLvl)
 	if (obj[0].cType == 'o')
 	{
 		TObject tmp = *obj;
-		VertMoveObject(&tmp, level, score, maxLvl);
+		VertMoveObject(&tmp, level, score, maxLvl, brickLength, brick);
 		if (tmp.IsFly == TRUE)
 		{
 			obj[0].x -= obj[0].horizonSpeed;
@@ -192,19 +191,19 @@ void setCur(int x, int y)
 	SetConsoleCursorPosition( GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
-void HorizonMoveMap(float dx)
+void HorizonMoveMap(float dx, int *brickLength, TObject **brick)
 {
 	mario.x -= dx;
-	for (int i = 0; i < brickLength; i++)
-		if (IsCollision(mario, brick[i]))
+	for (int i = 0; i < *brickLength; i++)
+		if (IsCollision(mario, (*brick)[i]))
 		{
 			mario.x += dx;
 			return;
 		}
 	mario.x += dx;
 	
-	for (int i = 0; i < brickLength; i++)
-		brick[i].x += dx;	
+	for (int i = 0; i < *brickLength; i++)
+		(*brick)[i].x += dx;	
 	for (int i = 0; i < movingLength; i++)
 		moving[i].x += dx;
 }
@@ -215,18 +214,18 @@ bool IsCollision(TObject o1, TObject o2)
 		((o1.y + o1.height) > o2.y) && (o1.y < (o2.y + o2.height));
 }
 
-TObject *GetNewBrick()
+TObject *GetNewBrick(TObject **brick, int *brickLength)
 {
-	brickLength++;
-	brick = (TObject*)realloc( brick, sizeof(*brick) * brickLength);
-	return brick + brickLength -1;
+	(*brickLength)++;
+	*brick = (TObject*)realloc(*brick, sizeof(TObject) * (*brickLength));
+	return (*brick) + (*brickLength) - 1;
 }
 
 TObject *GetNewMoving()
 {
 	movingLength++;
 	moving = (TObject*)realloc( moving, sizeof(*moving) * movingLength);
-	return moving + movingLength -1;
+	return moving + movingLength - 1;
 }
 
 void PutScoreOnMap(int *score)
@@ -240,31 +239,31 @@ void PutScoreOnMap(int *score)
 	}
 }
 
-void CreateLevel(int *lvl, int *score, int *maxLvl)
+void CreateLevel(int *lvl, int *score, int *maxLvl, int *brickLength, TObject **brick)
 {
-	brickLength = 0;
-	brick = (TObject*)realloc( brick, 0);
+	*brickLength = 0;
+	*brick = (TObject*)realloc(*brick, 0);
 	movingLength = 0;
-	moving = (TObject*)realloc( moving, 0);
+	moving = (TObject*)realloc(moving, 0);
 	
 	InitObject(&mario, 39, 10, 3, 3, '@');
 	*score = 0;
 	
 	if (*lvl == 1)
 	{
-		InitObject(GetNewBrick(), 20, 20, 40, 5, '#');
-		InitObject(GetNewBrick(), 30, 10, 5, 3, '?');
-		InitObject(GetNewBrick(), 50, 10, 5, 3, '?');		
-		InitObject(GetNewBrick(), 60, 15, 40, 10, '#');
-		InitObject(GetNewBrick(), 60, 5, 10, 3, '-');
-		InitObject(GetNewBrick(), 70, 5, 5, 3, '?');
-		InitObject(GetNewBrick(), 75, 5, 5, 3, '-');
-		InitObject(GetNewBrick(), 80, 5, 5, 3, '?');
-		InitObject(GetNewBrick(), 85, 5, 10, 3, '-');
-		InitObject(GetNewBrick(), 100, 20, 20, 5, '#');
-		InitObject(GetNewBrick(), 120, 15, 10, 10, '#');
-		InitObject(GetNewBrick(), 150, 20, 40, 5, '#');
-		InitObject(GetNewBrick(), 210, 15, 10, 10, '+');
+		InitObject(GetNewBrick(brick, brickLength), 20, 20, 40, 5, '#');
+		InitObject(GetNewBrick(brick, brickLength), 30, 10, 5, 3, '?');
+		InitObject(GetNewBrick(brick, brickLength), 50, 10, 5, 3, '?');		
+		InitObject(GetNewBrick(brick, brickLength), 60, 15, 40, 10, '#');
+		InitObject(GetNewBrick(brick, brickLength), 60, 5, 10, 3, '-');
+		InitObject(GetNewBrick(brick, brickLength), 70, 5, 5, 3, '?');
+		InitObject(GetNewBrick(brick, brickLength), 75, 5, 5, 3, '-');
+		InitObject(GetNewBrick(brick, brickLength), 80, 5, 5, 3, '?');
+		InitObject(GetNewBrick(brick, brickLength), 85, 5, 10, 3, '-');
+		InitObject(GetNewBrick(brick, brickLength), 100, 20, 20, 5, '#');
+		InitObject(GetNewBrick(brick, brickLength), 120, 15, 10, 10, '#');
+		InitObject(GetNewBrick(brick, brickLength), 150, 20, 40, 5, '#');
+		InitObject(GetNewBrick(brick, brickLength), 210, 15, 10, 10, '+');
 
 		InitObject(GetNewMoving(), 25, 10, 3, 2, 'o');
 		InitObject(GetNewMoving(), 80, 10, 3, 2, 'o');
@@ -273,12 +272,12 @@ void CreateLevel(int *lvl, int *score, int *maxLvl)
 	
 	if (*lvl == 2)
 	{
-		InitObject(GetNewBrick(), 20, 20, 40, 5, '#');
-		InitObject(GetNewBrick(), 60, 15, 10, 10, '#');
-		InitObject(GetNewBrick(), 80, 20, 20, 5, '#');
-		InitObject(GetNewBrick(), 120, 15, 10, 10, '#');
-		InitObject(GetNewBrick(), 150, 20, 40, 5, '#');
-		InitObject(GetNewBrick(), 210, 15, 10, 10, '+');
+		InitObject(GetNewBrick(brick, brickLength), 20, 20, 40, 5, '#');
+		InitObject(GetNewBrick(brick, brickLength), 60, 15, 10, 10, '#');
+		InitObject(GetNewBrick(brick, brickLength), 80, 20, 20, 5, '#');
+		InitObject(GetNewBrick(brick, brickLength), 120, 15, 10, 10, '#');
+		InitObject(GetNewBrick(brick, brickLength), 150, 20, 40, 5, '#');
+		InitObject(GetNewBrick(brick, brickLength), 210, 15, 10, 10, '+');
 		
 		InitObject(GetNewMoving(), 25, 10, 3, 2, 'o');
 		InitObject(GetNewMoving(), 80, 10, 3, 2, 'o');
@@ -290,10 +289,10 @@ void CreateLevel(int *lvl, int *score, int *maxLvl)
 	}
 	if (*lvl == 3)
 	{
-		InitObject(GetNewBrick(), 20, 20, 40, 5, '#');
-		InitObject(GetNewBrick(), 80, 20, 15, 5, '#');
-		InitObject(GetNewBrick(), 120, 15, 15, 10, '#');
-		InitObject(GetNewBrick(), 160, 10, 15, 15, '+');
+		InitObject(GetNewBrick(brick, brickLength), 20, 20, 40, 5, '#');
+		InitObject(GetNewBrick(brick, brickLength), 80, 20, 15, 5, '#');
+		InitObject(GetNewBrick(brick, brickLength), 120, 15, 15, 10, '#');
+		InitObject(GetNewBrick(brick, brickLength), 160, 10, 15, 15, '+');
 		
 		InitObject(GetNewMoving(), 25, 10, 3, 2, 'o');
 		InitObject(GetNewMoving(), 50, 10, 3, 2, 'o');
@@ -308,13 +307,16 @@ void CreateLevel(int *lvl, int *score, int *maxLvl)
 
 int main()
 {	
+	TObject *brick = NULL;
+	int brickLength = 0;
+
 	int maxLvl = 1;
 	int score = 0;
 	int level = 1;
 	
 	PutScoreOnMap(&score);
 	
-	CreateLevel(&level, &score, &maxLvl);
+	CreateLevel(&level, &score, &maxLvl, &brickLength, &brick);
 	
 	do
 	{
@@ -322,20 +324,20 @@ int main()
 
 		
 		if ((mario.IsFly == FALSE) && (GetKeyState(VK_SPACE) < 0)) mario.vertSpeed = -1;
-		if (GetKeyState('A') < 0) HorizonMoveMap(1);
-		if (GetKeyState('D') < 0) HorizonMoveMap(-1);
+		if (GetKeyState('A') < 0) HorizonMoveMap(1, &brickLength, &brick);
+		if (GetKeyState('D') < 0) HorizonMoveMap(-1, &brickLength, &brick);
 		
-		if (mario.y > mapHeight) PlayerDead(&level, &score, &maxLvl);
+		if (mario.y > mapHeight) PlayerDead(&level, &score, &maxLvl, &brickLength, &brick);
 		
-		VertMoveObject(&mario, &level, &score, &maxLvl);
-		MarioCollision(&level, &score, &maxLvl);
+		VertMoveObject(&mario, &level, &score, &maxLvl, &brickLength, &brick);
+		MarioCollision(&level, &score, &maxLvl, &brickLength, &brick);
 		
-		for (int i = 0; i < brickLength; i++)
+		for (int i = 0; i < brickLength; i++) 
 			PutObjectOnMap(brick[i]);
 		for (int i = 0; i < movingLength; i++)
 		{
-			VertMoveObject(moving +i, &level, &score, &maxLvl);
-			HorizonMoveObject(moving + i, &level, &score, &maxLvl);
+			VertMoveObject(moving +i, &level, &score, &maxLvl, &brickLength, &brick);
+			HorizonMoveObject(moving + i, &level, &score, &maxLvl, &brickLength, &brick);
 			if (moving[i].y > mapHeight)
 			{
 				DeleteMoving(i);
