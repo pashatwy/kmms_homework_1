@@ -4,9 +4,6 @@
 #include <math.h>
 #include <windows.h> 
 
-#define mapWidth 80
-#define mapHeight 25
-
 typedef struct SObject {
 	float x, y;
 	float width, height;
@@ -16,12 +13,7 @@ typedef struct SObject {
 	float horizonSpeed;
 } TObject;
 
-
-char map[mapHeight][mapWidth + 1];
-
-
-
-void ClearMap()
+void ClearMap(int mapWidth, int mapHeight, char **map)
 {
 	for (int i = 0; i < mapWidth; i++)
 		map[0][i] = ' ';
@@ -30,7 +22,7 @@ void ClearMap()
 		sprintf(map[j], map[0]);
 }
 
-void ShowMap()
+void ShowMap(int mapWidth, int mapHeight, char **map)
 {
 	map[mapHeight - 1][mapWidth - 1] = '\0';
 	for (int j = 0; j < mapHeight; j++)
@@ -159,12 +151,12 @@ void HorizonMoveObject(TObject *obj, int *level, int *score, int *maxLvl, int *b
 	}
 }
 
-bool IsPosInMap(int x, int y)
+bool IsPosInMap(int x, int y, int mapWidth, int mapHeight)
 {
 	return ((x >= 0) && (x < mapWidth) && (y >= 0) && (y < mapHeight));
 }
 
-void PutObjectOnMap(TObject obj)
+void PutObjectOnMap(TObject obj, int mapWidth, int mapHeight, char **map)
 {
 	int ix = (int)round(obj.x);
 	int iy = (int)round(obj.y);
@@ -173,7 +165,7 @@ void PutObjectOnMap(TObject obj)
 
 	for (int i = ix; i < (ix + iWidth); i++)
 		for (int j = iy; j < (iy + iHeight); j++)
-			if (IsPosInMap(i,j))
+			if (IsPosInMap(i,j, mapWidth, mapHeight))
 				map[j][i] = obj.cType;
 }
 
@@ -222,7 +214,7 @@ TObject *GetNewMoving(TObject **moving, int *movingLength)
 	return (*moving) + (*movingLength) - 1;
 }
 
-void PutScoreOnMap(int *score)
+void PutScoreOnMap(int *score, char **map)
 {
 	char c[30];
 	sprintf(c, "Score: %d", *score);
@@ -300,8 +292,16 @@ void CreateLevel(int *lvl, int *score, int *maxLvl, int *brickLength, TObject **
 }
 
 int main()
-{	
+{
+	const int mapWidth = 80;
+	const int mapHeight = 25;
 
+	char **map = (char**)malloc(sizeof(char*) * mapHeight);
+	
+	for (int i = 0; i < mapHeight; i++) {
+        map[i] = (char*)malloc(sizeof(char) * (mapWidth + 1));
+    }
+	
 	TObject mario;
 	
 	TObject *brick = NULL;
@@ -314,13 +314,13 @@ int main()
 	int score = 0;
 	int level = 1;
 	
-	PutScoreOnMap(&score);
+	PutScoreOnMap(&score, map);
 	
 	CreateLevel(&level, &score, &maxLvl, &brickLength, &brick, &movingLength, &moving, &mario);
 	
 	do
 	{
-		ClearMap();
+		ClearMap(mapWidth, mapHeight, map);
 
 		
 		if (((mario).IsFly == FALSE) && (GetKeyState(VK_SPACE) < 0)) (mario).vertSpeed = -1;
@@ -333,7 +333,7 @@ int main()
 		MarioCollision(&level, &score, &maxLvl, &brickLength, &brick, &movingLength, &moving, &mario);
 		
 		for (int i = 0; i < brickLength; i++) 
-			PutObjectOnMap(brick[i]);
+			PutObjectOnMap(brick[i], mapWidth, mapHeight, map);
 		for (int i = 0; i < movingLength; i++)
 		{
 			VertMoveObject(moving +i, &level, &score, &maxLvl, &brickLength, &brick, &movingLength, &moving, &mario);
@@ -344,13 +344,13 @@ int main()
 				i--;
 				continue;
 			}
-			PutObjectOnMap(moving[i]);
+			PutObjectOnMap(moving[i], mapWidth, mapHeight, map);
 		}
-		PutObjectOnMap(mario);
-		PutScoreOnMap(&score);
+		PutObjectOnMap(mario, mapWidth, mapHeight, map);
+		PutScoreOnMap(&score,map );
 		
 		setCur(0,0);
-		ShowMap();
+		ShowMap(mapWidth, mapHeight, map);
 		
 		Sleep(10);
 	}
