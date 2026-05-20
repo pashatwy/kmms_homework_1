@@ -19,13 +19,6 @@ public:
     void setX(float newX);
     void setY(float newY);
 
-    virtual void update(); //хз
-    void draw(char **map, const int mapWidth, const int mapHeight) const;
+    virtual void update();
     bool isCollision(const GameObject& other) const;
-};
-
-class Brick : public GameObject {
-public:
-    Brick(float xPos, float yPos, float oWidth, float oHeight, char type);
-    void update() override;
 };

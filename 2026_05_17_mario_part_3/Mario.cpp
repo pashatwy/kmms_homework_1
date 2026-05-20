@@ -10,12 +10,12 @@ Mario::Mario(
 
 bool Mario::getIsFly() const { return isFly; }
 
-void Mario::update() { //временно так
+void Mario::setIsFly( bool newIsFly ){
+	isFly = newIsFly;
+}
+
+void Mario::update() {
+    isFly = true; 
     vertSpeed += 0.05f;
     y += vertSpeed;
-    
-    if (y > 20) {
-        y = 20;
-        vertSpeed = 0;
-    }
 }
