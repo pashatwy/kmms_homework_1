@@ -2,6 +2,3 @@
 
 Brick::Brick(float xPos, float yPos, float oWidth, float oHeight, char type)
     : GameObject(xPos, yPos, oWidth, oHeight, type) {}
-
-void Brick::update() {
-}

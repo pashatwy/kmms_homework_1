@@ -17,7 +17,7 @@ int main() {
             gameLevel.render();
         }
 
-        Sleep(15);
+        Sleep(10);
     } while (GetKeyState(VK_ESCAPE) >= 0);
 
     return 0;

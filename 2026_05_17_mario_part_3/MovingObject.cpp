@@ -19,7 +19,8 @@ void MovingObject::setHorizonSpeed( float newHorizonSpeed ){
 	horizonSpeed = newHorizonSpeed;
 }
 
+void MovingObject::updatePhysics(Map& map, GameObject** allObjects, int count) {
+}
+
 void MovingObject::update() {
-    x += horizonSpeed;
-    y += vertSpeed;
 }

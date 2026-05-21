@@ -19,6 +19,5 @@ public:
     void setX(float newX);
     void setY(float newY);
 
-    virtual void update();
     bool isCollision(const GameObject& other) const;
 };

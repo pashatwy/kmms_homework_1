@@ -1,5 +1,6 @@
 #include "Level.hpp"
 #include "Brick.hpp"
+#include "Enemy.hpp"
 #include <windows.h>
 #include <cmath>
 
@@ -8,11 +9,13 @@ Level::Level(int width, int height)
 {
     player = new Mario(39.0f, 10.0f, 3.0f, 3.0f, '@');
 
-    objectsCount = 2;
+    objectsCount = 4;
     gameObjects = new GameObject*[objectsCount];
 
     gameObjects[0] = new Brick(0.0f, 20.0f, 120.0f, 5.0f, '#');
-    gameObjects[1] = new Brick(45.0f, 12.0f, 4.0f, 2.0f, '?');
+    gameObjects[1] = new Brick(45.0f, 12.0f, 4.0f, 2.0f, '#');
+	gameObjects[2] = new Brick(60.0f, 15.0f, 40.0f, 10.0f, '#');
+	gameObjects[3] = new Enemy(25.0f, 10.0f, 3.0f, 2.0f, 'o');
 }
 
 Level::~Level() {
@@ -27,33 +30,18 @@ Level::~Level() {
 }
 
 void Level::updatePhysics() {
-    if (player == nullptr) return;
-
-    player->setIsFly(true);
-
-    player->setVertSpeed(player->getVertSpeed() + 0.05f);
-    player->setY(player->getY() + player->getVertSpeed());
-
     for (int i = 0; i < objectsCount; i++) {
-        if (gameObjects[i] != nullptr && player->isCollision(*gameObjects[i])) {
-            
-            if (player->getVertSpeed() > 0) {
-                player->setIsFly(false);
-                player->setY(gameObjects[i]->getY() - player->getHeight());
-                player->setVertSpeed(0);
-            }
-
-            else if (player->getVertSpeed() < 0) {
-                player->setY(gameObjects[i]->getY() + gameObjects[i]->getHeight());
-                player->setVertSpeed(0);
-            }
-            break;
+        IPhysics* physicalObj = dynamic_cast<IPhysics*>(gameObjects[i]);
+        if (physicalObj) {
+            physicalObj->updatePhysics(levelMap, gameObjects, objectsCount);
         }
     }
 }
 
 bool Level::update() {
     bool needRender = false;
+
+    player->setHorizonSpeed(0.0f); 
 
     if (!player->getIsFly() && GetKeyState(VK_SPACE) < 0) {
         player->setVertSpeed(-1.0f);
@@ -69,13 +57,16 @@ bool Level::update() {
         levelMap.scrollMap(1.0f, player, gameObjects, objectsCount);
         needRender = true;
     }
+	
+	
+	if (player) {
+		player->updatePhysics(levelMap, gameObjects, objectsCount);
+	}
 
-    float oldY = player->getY();
     updatePhysics();
 
-    if (player->getY() != oldY || player->getVertSpeed() != 0) {
-        needRender = true;
-    }
+
+    needRender = true;
 
     return needRender;
 }

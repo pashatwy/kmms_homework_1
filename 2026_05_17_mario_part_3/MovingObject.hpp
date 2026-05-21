@@ -1,7 +1,8 @@
 #pragma once
 #include "GameObject.hpp"
+#include "IPhysical.hpp"
 
-class MovingObject : public GameObject {
+class MovingObject : public GameObject, public IPhysics {
 	protected:
 		float vertSpeed;
 		float horizonSpeed;
@@ -14,5 +15,6 @@ class MovingObject : public GameObject {
 		void setVertSpeed( float newVertSpeed );
 		void setHorizonSpeed( float newHorizonSpeed );
 		
-		void update() override;
+		 virtual void updatePhysics(Map& map, GameObject** allObjects, int count);
+		virtual void update();
 };

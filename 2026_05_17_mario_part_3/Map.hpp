@@ -16,6 +16,8 @@ public:
     int getWidth() const;
     int getHeight() const;
 
+	char getChar(int x, int y) const;
+
     void clear();
     void setChar(int x, int y, char symbol);
     void display();

@@ -29,6 +29,13 @@ bool Map::isPosValid(int x, int y) const {
     return (x >= 0 && x < width && y >= 0 && y < height);
 }
 
+char Map::getChar(int x, int y) const {
+    if (x >= 0 && x < width && y >= 0 && y < height) {
+        return grid[y][x];
+    }
+    return ' ';
+}
+
 void Map::clear() {
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {

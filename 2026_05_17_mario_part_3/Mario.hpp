@@ -11,5 +11,5 @@ class Mario : public MovingObject {
 		
 		void setIsFly( bool newIsFly );
 		
-		void update() override;
+		void updatePhysics(Map& map, GameObject** allObjects, int count) override;
 };
