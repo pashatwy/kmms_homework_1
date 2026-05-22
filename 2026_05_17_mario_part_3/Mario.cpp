@@ -6,6 +6,7 @@ Mario::Mario(
 	char type)
 	: MovingObject(xPos, yPos, oWidth, oHeight, type){
 		isFly = true;
+		hitBlock = nullptr;
 }
 
 bool Mario::getIsFly() const { return isFly; }
@@ -24,7 +25,7 @@ void Mario::updatePhysics(Map& map, GameObject** allObjects, int count) {
     GameObject* hitObject = nullptr;
 
     for (int i = 0; i < count; i++) {
-        if (allObjects[i] != this && futureMario.isCollision(*allObjects[i])) {
+		if (allObjects[i] != nullptr && allObjects[i] != this && futureMario.isCollision(*allObjects[i])) {
             collision = true;
             hitObject = allObjects[i];
             break;
@@ -36,10 +37,12 @@ void Mario::updatePhysics(Map& map, GameObject** allObjects, int count) {
             y = hitObject->getY() - height;
             vertSpeed = 0;
             isFly = false;
-        } else if (vertSpeed < 0) {
-            y = hitObject->getY() + hitObject->getHeight();
-            vertSpeed = 0;
-        }
+		}else if (vertSpeed < 0) {
+			y = hitObject->getY() + hitObject->getHeight();
+			vertSpeed = 0;
+
+			hitBlock = hitObject; 
+		}
     } else {
         y = nextY;
         isFly = true;

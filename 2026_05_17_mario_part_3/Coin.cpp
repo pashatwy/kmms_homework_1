@@ -1,15 +1,10 @@
-#include "Enemy.hpp"
+#include "Coin.hpp"
 
-Enemy::Enemy(
-	float xPos, float yPos,
-	float oWidth, float oHeight,
-	char type)
-	: MovingObject(xPos, yPos, oWidth, oHeight, type){
-		vertSpeed = 0;
-		horizonSpeed = 0.2;
+Coin::Coin(float x, float y, float w, float h, char type) 
+    : MovingObject(x, y, w, h, '$') {
+    vertSpeed = -0.5f;
 }
-
-void Enemy::updatePhysics(Map& map, GameObject** allObjects, int count) {
+void Coin::updatePhysics(Map& map, GameObject** allObjects, int count) {
     vertSpeed += 0.05f;
     float nextY = y + vertSpeed;
     
@@ -19,8 +14,9 @@ void Enemy::updatePhysics(Map& map, GameObject** allObjects, int count) {
     bool wallAhead = false;
     bool floorAhead = false;
 
-    for (int i = 0; i < count; i++) {
-        if (allObjects[i] == nullptr || allObjects[i] == this) continue;
+	for (int i = 0; i < count; i++) {
+		if (allObjects[i] == nullptr || allObjects[i] == this) continue;
+		if (allObjects[i]->getType() == '@') continue;
 
         GameObject futureEnemyY(x, nextY, width, height, this->cType);
         if (futureEnemyY.isCollision(*allObjects[i])) {
@@ -42,7 +38,7 @@ void Enemy::updatePhysics(Map& map, GameObject** allObjects, int count) {
         }
     }
 
-    if (wallAhead || !floorAhead) {
+    if (wallAhead) {
         horizonSpeed *= -1;
     }
 
@@ -51,7 +47,3 @@ void Enemy::updatePhysics(Map& map, GameObject** allObjects, int count) {
         y = nextY;
     }
 }
-
-void Enemy::update() {
-}
-	

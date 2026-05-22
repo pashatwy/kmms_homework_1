@@ -22,6 +22,7 @@ char GameObject::getType() const { return cType; }
 
 void GameObject::setX(float newX) { x = newX; }
 void GameObject::setY(float newY) { y = newY; }
+void GameObject::setType(char newType) { cType = newType; }
 
 bool GameObject::isCollision(const GameObject& other) const {
     return (x + width > other.getX()) && (x < other.getX() + other.getWidth()) &&
