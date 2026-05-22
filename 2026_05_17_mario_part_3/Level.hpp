@@ -7,20 +7,25 @@ private:
     Map levelMap;
     Mario* player;
     GameObject** gameObjects;
-	int capacity;
+    int capacity;
     int count;
-	
-	void updatePhysics(GameObject** all, int totalCount);
-	void growArray();
+    int currentLevel;
+    int maxLevel;
+    int score;
+
+    void updatePhysics(GameObject** all, int totalCount);
+    void growArray();
+    void loadLevel(int lvl);
 
 public:
     Level(int width, int height);
     ~Level();
-	
-	void removeGameObject(int index);
-	void handleWorldEvents();
-	void spawnCoin(float x, float y);
-	void addGameObject(GameObject* gameObjectsbj);
+
+    void restartLevel();
+    void removeGameObject(int index);
+    void handleWorldEvents();
+    void spawnCoin(float x, float y);
+    void addGameObject(GameObject* obj);
     bool update();
     void render();
 };

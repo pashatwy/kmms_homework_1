@@ -66,12 +66,15 @@ void Map::scrollMap(float dx, GameObject* player, GameObject** objects, int obje
     player->setX(player->getX() - dx);
 
     bool collision = false;
-    for (int i = 0; i < objectsCount; i++) {
-        if (objects[i] != nullptr && player->isCollision(*objects[i])) {
-            collision = true;
-            break;
-        }
-    }
+	for (int i = 0; i < objectsCount; i++) {
+		if (objects[i] != nullptr && player->isCollision(*objects[i])) {
+			if (objects[i]->getType() == 'o') continue;
+			if (objects[i]->getType() == '$') continue;
+			if (objects[i]->getType() == '+') continue;
+			collision = true;
+			break;
+		}
+	}
 
     player->setX(player->getX() + dx);
 

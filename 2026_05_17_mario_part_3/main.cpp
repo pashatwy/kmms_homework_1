@@ -7,7 +7,13 @@ int main() {
     const int windowHeight = 25;
 
     Level gameLevel(windowWidth, windowHeight);
-
+	
+	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO cursorInfo;
+    GetConsoleCursorInfo(consoleHandle, &cursorInfo);
+    cursorInfo.bVisible = false;
+    SetConsoleCursorInfo(consoleHandle, &cursorInfo);
+	
     gameLevel.render(); 
 
     do {
@@ -17,7 +23,7 @@ int main() {
             gameLevel.render();
         }
 
-        Sleep(10);
+        Sleep(0);
     } while (GetKeyState(VK_ESCAPE) >= 0);
 
     return 0;

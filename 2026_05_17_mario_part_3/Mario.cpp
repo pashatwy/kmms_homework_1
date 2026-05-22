@@ -25,7 +25,12 @@ void Mario::updatePhysics(Map& map, GameObject** allObjects, int count) {
     GameObject* hitObject = nullptr;
 
     for (int i = 0; i < count; i++) {
-		if (allObjects[i] != nullptr && allObjects[i] != this && futureMario.isCollision(*allObjects[i])) {
+        if (allObjects[i] == nullptr || allObjects[i] == this) continue;
+        if (allObjects[i]->getType() == '$') continue;
+        if (allObjects[i]->getType() == 'o') continue;
+		if (allObjects[i]->getType() == '+') continue;
+
+        if (futureMario.isCollision(*allObjects[i])) {
             collision = true;
             hitObject = allObjects[i];
             break;
@@ -37,12 +42,11 @@ void Mario::updatePhysics(Map& map, GameObject** allObjects, int count) {
             y = hitObject->getY() - height;
             vertSpeed = 0;
             isFly = false;
-		}else if (vertSpeed < 0) {
-			y = hitObject->getY() + hitObject->getHeight();
-			vertSpeed = 0;
-
-			hitBlock = hitObject; 
-		}
+        } else if (vertSpeed < 0) {
+            y = hitObject->getY() + hitObject->getHeight();
+            vertSpeed = 0;
+            hitBlock = hitObject;
+        }
     } else {
         y = nextY;
         isFly = true;

@@ -21,6 +21,7 @@ void Enemy::updatePhysics(Map& map, GameObject** allObjects, int count) {
 
     for (int i = 0; i < count; i++) {
         if (allObjects[i] == nullptr || allObjects[i] == this) continue;
+		if (allObjects[i]->getType() == '@') continue;
 
         GameObject futureEnemyY(x, nextY, width, height, this->cType);
         if (futureEnemyY.isCollision(*allObjects[i])) {
