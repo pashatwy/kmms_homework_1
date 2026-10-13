@@ -25,9 +25,20 @@ KeyBoardWindow::KeyBoardWindow(QWidget* parent) : QWidget(parent) {
 	display->setMinimumHeight(80);
 	display->setFont(QFont("Roboto", 40));
     display->setReadOnly(true);
+	display->setFocusPolicy(Qt::NoFocus);
 	display->setText("Помоги мне заработать лучше...");
 
 	keyboard = new KeyBoard(keyboard_width);
+	
+	connect(keyboard, &KeyBoard::key_clicked, this, [this](const QString& text) {
+		display->setText( display->text() + text );
+	});
+	
+	connect(keyboard, &KeyBoard::backspace_clicked, this, [this]() {
+		QString current = display->text();
+		current.chop(1);
+		display->setText(current);
+	});
 
     QVBoxLayout* main_layout = new QVBoxLayout(this);
 	main_layout->addLayout(smail_layout);
@@ -36,9 +47,12 @@ KeyBoardWindow::KeyBoardWindow(QWidget* parent) : QWidget(parent) {
 }
 
 void KeyBoardWindow::keyPressEvent(QKeyEvent* event) {
+	if (keyboard->is_special_key(event->key())) {
+		keyboard->animate_special_button(event->key());
+		return;
+	}
 	const int key = event->nativeVirtualKey();
 	if (keyboard->is_key_allowed(key)) {
-		display->setText(display->text() + keyboard->get_key_text(key));
 		keyboard->animate_button(key);
 	}
 }

@@ -1,4 +1,5 @@
 #include "keyboard.hpp"
+#include <QDebug> //test
 
 using biv::KeyBoard;
 
@@ -17,6 +18,8 @@ KeyBoard::KeyBoard(const int width, QWidget* parent)
 	KeyBoardButton* backspace_btn = new KeyBoardButton("Удалить");
 	backspace_btn->setMinimumSize(2 * button_width, button_width);
 	keys_layout->addWidget(backspace_btn, 0, 26, 2, 3);
+	connect(backspace_btn, &QPushButton::clicked, this, [this]() { emit backspace_clicked(); });
+	special_buttons[Qt::Key_Backspace] = backspace_btn;
 
 	// 2-я линия
 	KeyBoardButton* tab_btn = new KeyBoardButton("Tab");
@@ -51,10 +54,20 @@ KeyBoard::KeyBoard(const int width, QWidget* parent)
 	KeyBoardButton* space = new KeyBoardButton();
 	space->setMinimumSize(8 * button_width, button_width);
 	keys_layout->addWidget(space, 8, 7, 2, 16);
+	connect(space, &QPushButton::clicked, this, [this]() { emit key_clicked(" "); });
+	special_buttons[Qt::Key_Space] = space;
 }
 
 void KeyBoard::animate_button(const int code) {
 	buttons.at(code)->animateClick();
+}
+
+void KeyBoard::animate_special_button(const int qt_key) {
+	special_buttons.at(qt_key)->animateClick();
+}
+
+bool KeyBoard::is_special_key(const int qt_key) const noexcept {
+	return special_buttons.count(qt_key) != 0;
 }
 
 QString KeyBoard::get_key_text(const int code) const {
@@ -76,10 +89,13 @@ void KeyBoard::create_buttons(
 ) {
 	for (int i = 0; i < data.size(); i++) {
         KeyBoardButton* btn = new KeyBoardButton(data[i].text);
+		connect(btn, &QPushButton::clicked, this, [btn, this]() { emit key_clicked(btn -> text()); });
 		btn->setMinimumSize(button_width, button_width);
         
 		layout->addWidget(btn, line, i * 2 + start_position, 2, 2);
 		
 		buttons[data[i].code] = btn;
+
+
 	}
 }
